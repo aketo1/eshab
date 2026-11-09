@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' qrc:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'none'">
+  <link rel="stylesheet" href="studio.css">
+  <title>اسحب</title>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="topbar" id="topbar">
+    <button class="round glass back" id="back" aria-label="رجوع"></button>
+    <div class="identity"><div class="brand-icon" id="brand-icon"></div><div><h1 id="filename" dir="auto">اسحب</h1><span id="filedetail">مساحة خفيفة لملفاتك</span></div></div>
+    <div class="top-actions" id="top-actions"></div>
+    <div class="window-controls"><button id="minimize" aria-label="تصغير"></button><button id="maximize" aria-label="تكبير"></button><button id="close" aria-label="إغلاق"></button></div>
+  </header>
+  <section id="activity-slot" class="activity-slot" hidden aria-label="نشاط البرنامج"><div id="activity-panel" class="activity-panel glass" tabindex="0"></div></section>
+  <main id="main"><div class="boot"><div class="liquid-orb"></div><span>اسحب</span></div></main>
+  <div class="command-backdrop" id="command-backdrop" hidden><div class="command glass"><input id="command-input" placeholder="وش تبي تسوي؟" autocomplete="off"><div id="command-results"></div></div></div>
+</div>
+<script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+<script src="brand.js"></script>
+<script src="activity.js"></script>
+<script src="audio.js"></script>
+<script src="studio.js"></script>
+</body>
+</html>

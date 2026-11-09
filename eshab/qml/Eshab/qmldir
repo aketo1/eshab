@@ -1,0 +1,7 @@
+module Eshab
+singleton Theme 1.0 Theme.qml
+Logo 1.0 Logo.qml
+Glass 1.0 Glass.qml
+Backdrop 1.0 Backdrop.qml
+WindowButton 1.0 WindowButton.qml
+MaterialJar 1.0 MaterialJar.qml

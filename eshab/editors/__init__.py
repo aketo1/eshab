@@ -1,0 +1,117 @@
+"""Interactive tool editors for the Windows port of Tangerine.
+
+Each editor collects its options, then hands the work to a Job so the heavy
+lifting happens on a worker thread with the familiar progress window.
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+from PySide6.QtWidgets import QDialog, QMessageBox, QWidget
+
+from .. import i18n, jobs, progress, settings, tools
+from ..engines import EngineError
+from .batch import exec_editor, run_sequential_dialogs
+from .audio import (
+    BleepDialog,
+    ChannelsDialog,
+    TrimAudioDialog,
+    VisualizerDialog,
+    audio_peaks,
+)
+from .base import ToolDialog, pil_to_pixmap, pil_to_qimage, run_batch
+from .images import (
+    AnnotateDialog,
+    BackgroundDialog,
+    CollageDialog,
+    CompressDialog,
+    CropImageDialog,
+    EditPhotoDialog,
+    MetadataDialog,
+    RedactPhotoDialog,
+)
+from .ui.canvas import AnnotateCanvas, CropCanvas, ImageCanvas, RedactCanvas, _draw_op
+from .ui.video import BoxDrawDialog, VideoPane
+from .ui.waveform import BleepWaveform, PlayerMixin, TrimWaveform, WaveformView
+from .video import (
+    CropVideoDialog,
+    JoinDialog,
+    RedactVideoDialog,
+    SnapshotsDialog,
+    SpeedDialog,
+    SplitVideoDialog,
+    TrimVideoDialog,
+    _frame_pixmap,
+    _grab_frame,
+)
+
+
+# ---------------------------------------------------------------------------
+# Dispatch
+# ---------------------------------------------------------------------------
+
+def open_editor(paths, key: str, parent: QWidget | None = None, label: str | None = None):
+    sources = [Path(p) for p in paths]
+    if not sources:
+        return
+    if key in ("img.compress", "vid.compress", "aud.compress"):
+        family = {"img": "image", "vid": "video", "aud": "audio"}[key.split(".")[0]]
+        return run_compress(paths, family, parent, label)
+    sequential_image_editors = {
+        "img.crop": CropImageDialog,
+        "img.redact": RedactPhotoDialog,
+        "img.annotate": AnnotateDialog,
+    }
+    if key in sequential_image_editors and len(sources) > 1:
+        try:
+            return run_sequential_dialogs(
+                sources, sequential_image_editors[key], parent)
+        except EngineError as error:
+            QMessageBox.warning(parent, label or i18n.tr("app.name"), str(error))
+            return None
+    if key == "img.background" and len(sources) > 1:
+        try:
+            return exec_editor(BackgroundDialog(sources, parent))
+        except EngineError as error:
+            QMessageBox.warning(parent, label or i18n.tr("app.name"), str(error))
+            return None
+    builders = {
+        "img.metadata": lambda: MetadataDialog(sources[0], parent),
+        "img.crop": lambda: CropImageDialog(sources[0], parent),
+        "img.redact": lambda: RedactPhotoDialog(sources[0], parent),
+        "img.annotate": lambda: AnnotateDialog(sources[0], parent),
+        "img.background": lambda: BackgroundDialog(sources[0], parent),
+        "img.edit": lambda: EditPhotoDialog(sources[0], parent),
+        "img.collage": lambda: CollageDialog(sources, parent),
+        "aud.metadata": lambda: MetadataDialog(sources[0], parent),
+        "aud.trim": lambda: TrimAudioDialog(sources[0], parent),
+        "aud.bleep": lambda: BleepDialog(sources[0], parent),
+        "aud.channels": lambda: ChannelsDialog(sources[0], parent),
+        "aud.visualizer": lambda: VisualizerDialog(sources[0], parent),
+        "vid.metadata": lambda: MetadataDialog(sources[0], parent),
+        "vid.trim": lambda: TrimVideoDialog(sources[0], parent),
+        "vid.crop": lambda: CropVideoDialog(sources[0], parent),
+        "vid.speed": lambda: SpeedDialog(sources[0], parent),
+        "vid.snapshots": lambda: SnapshotsDialog(sources[0], parent),
+        "vid.split": lambda: SplitVideoDialog(sources[0], parent),
+        "vid.redact": lambda: RedactVideoDialog(sources[0], parent),
+        "vid.join": lambda: JoinDialog(sources, parent),
+        "gif.metadata": lambda: MetadataDialog(sources[0], parent),
+        "pdf.metadata": lambda: MetadataDialog(sources[0], parent),
+    }
+    builder = builders.get(key)
+    if builder is None:
+        QMessageBox.information(
+            parent, label or i18n.tr("app.name"),
+            i18n.tr("dlg.not_available", label=label or key))
+        return
+    try:
+        dialog = builder()
+    except EngineError as error:
+        QMessageBox.warning(parent, label or i18n.tr("app.name"), str(error))
+        return
+    return exec_editor(dialog)
+
+
+def run_compress(paths, family: str, parent: QWidget | None = None, label: str | None = None) -> QDialog:
+    return exec_editor(CompressDialog(paths, family, parent))
