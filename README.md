@@ -59,7 +59,7 @@ python -m venv .venv
 
 ## English
 
-**Eshab** turns a file into another format, or opens a light editor for it, from a single drag: drag any file, hold **Shift** (convert), **Alt** (tools) or **Ctrl+Shift** (actions), and drop it on a card of the wheel that appears at the pointer. The result is saved next to the original, which is never changed. It also lives in Explorer's right-click menu, shows progress in a small island at the top of the screen, and keeps your recent results. Everything runs locally. Windows 10/11, 64-bit.
+**Eshab** turns a file into another format, or opens a light editor for it, from a single drag: drag any file, hold **Shift** (convert), **Alt** (tools) or **Shift** (actions), and drop it on a card of the wheel that appears at the pointer. The result is saved next to the original, which is never changed. It also lives in Explorer's right-click menu, shows progress in a small island at the top of the screen, and keeps your recent results. Everything runs locally. Windows 10/11, 64-bit.
 
 ## License
 
