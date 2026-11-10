@@ -22,8 +22,8 @@ DEFAULTS: dict[str, Any] = {
     "glassTransparency": 60,
     "conversionWheelDragModifierMask": "shift",
     "toolsWheelDragModifierMask": "alt",
-    # Plain Ctrl+drag is Explorer's copy: the actions wheel needs Ctrl+Shift.
-    "actionsWheelDragModifierMask": "ctrl+shift",
+    # Plain Ctrl+drag is Explorer's copy; the wheel still opens, and Settings can switch to Ctrl+Shift.
+    "actionsWheelDragModifierMask": "ctrl",
     "wheelToggleHotkey": "",
     "soundsAndHapticsEnabled": False,
     "conversionFanTheme": "glass",
