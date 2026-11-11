@@ -286,8 +286,9 @@ Window {
                                             anchors.fill: parent
                                             visible: cardRow.modelData.glyph !== ""
                                             sourceSize: Qt.size(44, 44)
-                                            source: cardRow.modelData.glyph
-                                                    ? "image://eshab/glyph/" + cardRow.modelData.glyph + "/" + (Theme.dark ? "F2F2F4" : "1C1C1E") : ""
+                                            // Files drawn once by wheel_order: the image provider would be asked
+                                            // from its loader thread while the window is still being created.
+                                            source: Theme.dark ? cardRow.modelData.iconDark : cardRow.modelData.iconLight
                                         }
                                     }
                                     Text {

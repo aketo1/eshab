@@ -65,14 +65,41 @@ def _label(mode: str, key: str) -> str:
     return i18n.tr(key)
 
 
+def _icon_file(glyph: str, color: str) -> str:
+    """The card's line icon as a file URL, drawn once into the cache. The settings
+    window must not ask the image provider: it answers from a loader thread, which
+    would wait on Python while the window is being created (and freeze it)."""
+    if not glyph:
+        return ""
+    from PySide6.QtCore import QRectF, QUrl, Qt
+    from PySide6.QtGui import QColor, QImage, QPainter
+
+    from . import paths
+
+    folder = paths.data_dir() / "cache" / "glyphs"
+    target = folder / f"{glyph}-{color}.png"
+    if not target.is_file():
+        folder.mkdir(parents=True, exist_ok=True)
+        image = QImage(48, 48, QImage.Format.Format_ARGB32_Premultiplied)
+        image.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(image)
+        icons.paint_icon(painter, glyph, QRectF(0, 0, 48, 48), QColor("#" + color), stroke=48 / 13.0)
+        painter.end()
+        image.save(str(target))
+    return QUrl.fromLocalFile(str(target)).toString()
+
+
 def cards(mode: str) -> list[dict]:
     """Every card a wheel can show, in the user's order, for the settings list."""
     if mode not in MODES:
         return []
     hidden = set(_stored("wheelHidden", mode))
-    items = [{"key": key, "label": _label(mode, key), "glyph": icons.icon_for(key) or "",
-              "text": key.upper() if mode == "conversion" else "", "hidden": key in hidden}
-             for key in _all_keys(mode)]
+    items = []
+    for key in _all_keys(mode):
+        glyph = icons.icon_for(key) or ""
+        items.append({"key": key, "label": _label(mode, key), "glyph": glyph,
+                      "iconDark": _icon_file(glyph, "F2F2F4"), "iconLight": _icon_file(glyph, "1C1C1E"),
+                      "text": key.upper() if mode == "conversion" else "", "hidden": key in hidden})
     rank = {key: index for index, key in enumerate(_stored("wheelOrder", mode))}
     return sorted(items, key=lambda item: rank.get(item["key"], len(rank)))
 
